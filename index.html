@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Dashboard académico interactivo de inteligencia comercial y negocios internacionales.">
+<title>Inteligencia Comercial | Dashboard académico</title>
+<style>
+:root{--navy:#10283f;--blue:#176b87;--cyan:#27a6b8;--green:#18866b;--red:#c65d5d;--ink:#203244;--muted:#6b7c8c;--line:#dce5eb;--bg:#f2f6f9;--card:#fff;--soft:#eaf2f6;--shadow:0 8px 24px rgba(16,40,63,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,Segoe UI,Arial,sans-serif}
+header{background:linear-gradient(115deg,#10283f,#176b87);color:white;padding:28px max(22px,calc((100% - 1220px)/2))}
+header .eyebrow{font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:#bde7ee;font-weight:700}
+header h1{margin:7px 0 4px;font-size:clamp(1.6rem,3vw,2.35rem);line-height:1.15}
+header p{margin:0;color:#d9e9ef;max-width:760px}
+main{max-width:1220px;margin:24px auto;padding:0 18px 48px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+button,.file-label{border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer;font-size:.88rem;background:var(--navy);color:#fff}
+button.secondary,.file-label{background:#e2edf2;color:var(--navy);border:1px solid #ccdae2}
+button:hover,.file-label:hover{filter:brightness(.96)}
+button.danger{background:#fff0f0;color:#a63d3d;border:1px solid #f0cccc}
+input,select{font:inherit;border:1px solid #ccd9e1;border-radius:8px;padding:9px 10px;background:#fff;color:var(--ink);max-width:100%}
+input:focus,select:focus{outline:2px solid #9bd5df;border-color:var(--blue)}
+.file-label input{display:none}
+.notice{background:#fff8e8;border:1px solid #f0dfb8;border-radius:10px;padding:11px 14px;color:#6e5520;font-size:.88rem;margin-bottom:18px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:17px;box-shadow:var(--shadow);min-width:0}
+.kpi-label{color:var(--muted);font-size:.82rem;font-weight:650}
+.kpi-value{font-size:clamp(1.35rem,2.6vw,2rem);font-weight:800;color:var(--navy);margin:5px 0 0;letter-spacing:-.03em;overflow-wrap:anywhere}
+.kpi-sub{font-size:.76rem;color:var(--muted)}
+.layout{display:grid;grid-template-columns:1.2fr .8fr;gap:15px;margin-bottom:16px}
+.card h2{font-size:1.02rem;margin:0 0 3px;color:var(--navy)}
+.card .sub{font-size:.79rem;color:var(--muted);margin:0 0 14px}
+.chart-wrap{height:260px;position:relative}
+canvas{width:100%;height:100%;display:block}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:16px}
+.table-wrap{overflow:auto;max-height:330px}
+table{width:100%;border-collapse:collapse;font-size:.84rem;white-space:nowrap}
+th,td{text-align:left;padding:10px 9px;border-bottom:1px solid #edf1f4}
+th{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:#fff}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.form-grid{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:9px;align-items:end}
+.field label{display:block;font-size:.76rem;color:var(--muted);font-weight:650;margin-bottom:4px}
+.field input{width:100%}
+.form-actions{display:flex;gap:8px;align-items:end}
+.filters{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:12px}
+.filters label{font-size:.8rem;color:var(--muted);font-weight:650}
+.projection-note{font-size:.82rem;color:var(--muted);margin-top:10px}
+footer{max-width:1220px;margin:0 auto;padding:0 18px 30px;color:var(--muted);font-size:.78rem}
+.tag{display:inline-block;border-radius:30px;background:#e7f4f4;color:#176b70;padding:4px 9px;font-size:.7rem;font-weight:800;letter-spacing:.04em}
+.positive{color:var(--green)}.negative{color:var(--red)}
+@media(max-width:850px){.kpis{grid-template-columns:repeat(2,1fr)}.layout,.bottom-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){main{padding:0 12px 35px}.kpis{gap:8px}.card{padding:13px}.form-grid{grid-template-columns:1fr 1fr}.form-actions{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header>
+  <div class="eyebrow">Laboratorio de inteligencia de negocios · Demo académica</div>
+  <h1>Dashboard de comercio internacional</h1>
+  <p>Explora operaciones comerciales, compara exportaciones e importaciones y estima una tendencia futura a partir de los datos registrados.</p>
+</header>
+<main>
+  <div class="toolbar">
+    <div><span class="tag">DATOS SIMULADOS</span> <span style="font-size:.8rem;color:var(--muted)">Moneda: dólares estadounidenses (USD)</span></div>
+    <div class="actions">
+      <button class="secondary" id="resetBtn">Restablecer ejemplo</button>
+      <button class="secondary" id="csvBtn">Descargar CSV</button>
+      <label class="file-label">Importar CSV<input type="file" id="csvFile" accept=".csv,text/csv"></label>
+    </div>
+  </div>
+  <div class="notice"><strong>Importante:</strong> este es un prototipo demostrativo. Las cifras iniciales son ficticias y no representan resultados reales de una empresa ni estadísticas oficiales.</div>
+
+  <section class="kpis" aria-label="Indicadores principales">
+    <div class="card"><div class="kpi-label">Total exportaciones</div><div class="kpi-value" id="exportsKpi">$0</div><div class="kpi-sub">USD registrados en el filtro</div></div>
+    <div class="card"><div class="kpi-label">Total importaciones</div><div class="kpi-value" id="importsKpi">$0</div><div class="kpi-sub">USD registrados en el filtro</div></div>
+    <div class="card"><div class="kpi-label">Balance comercial</div><div class="kpi-value" id="balanceKpi">$0</div><div class="kpi-sub" id="balanceText">Exportaciones menos importaciones</div></div>
+    <div class="card"><div class="kpi-label">Países con operaciones</div><div class="kpi-value" id="countriesKpi">0</div><div class="kpi-sub" id="operationsText">0 operaciones registradas</div></div>
+  </section>
+
+  <section class="layout">
+    <div class="card">
+      <h2>Comportamiento mensual</h2><p class="sub">Exportaciones e importaciones agrupadas por mes</p>
+      <div class="chart-wrap"><canvas id="monthlyChart" aria-label="Gráfico mensual de exportaciones e importaciones"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Operaciones por país</h2><p class="sub">Comparación de valores comerciales por mercado</p>
+      <div class="chart-wrap"><canvas id="countryChart" aria-label="Gráfico de operaciones por país"></canvas></div>
+    </div>
+  </section>
+
+  <section class="bottom-grid">
+    <div class="card">
+      <h2>Distribución de exportaciones</h2><p class="sub">Participación por categoría de producto</p>
+      <div class="chart-wrap"><canvas id="productChart" aria-label="Gráfico de exportaciones por producto"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Proyección de exportaciones</h2><p class="sub">Estimación lineal para los próximos tres meses</p>
+      <div class="chart-wrap"><canvas id="forecastChart" aria-label="Proyección lineal de exportaciones"></canvas></div>
+      <div class="projection-note" id="forecastText">La proyección se calculará con los datos disponibles.</div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-bottom:16px">
+    <h2>Registrar una operación comercial</h2>
+    <p class="sub">Ingresa una fila nueva. Los indicadores y gráficos se actualizarán automáticamente.</p>
+    <form id="entryForm" class="form-grid">
+      <div class="field"><label for="date">Fecha</label><input id="date" type="date" required value="2026-07-10"></div>
+      <div class="field"><label for="country">País</label><input id="country" required placeholder="Ej. Brasil"></div>
+      <div class="field"><label for="product">Producto</label><input id="product" required placeholder="Ej. Café"></div>
+      <div class="field"><label for="exports">Exportaciones (USD)</label><input id="exports" type="number" min="0" step="0.01" required placeholder="0"></div>
+      <div class="field"><label for="imports">Importaciones (USD)</label><input id="imports" type="number" min="0" step="0.01" required placeholder="0"></div>
+      <div class="form-actions"><button type="submit">Agregar operación</button></div>
+    </form>
+    <div class="filters">
+      <label for="countryFilter">Filtrar país</label><select id="countryFilter"><option value="">Todos los países</option></select>
+      <label for="yearFilter">Año</label><select id="yearFilter"><option value="">Todos los años</option></select>
+      <button class="secondary" id="clearFilters" type="button">Limpiar filtros</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Detalle de operaciones</h2><p class="sub">Registros visibles según los filtros seleccionados</p>
+    <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>País</th><th>Producto</th><th>Exportaciones</th><th>Importaciones</th><th>Balance</th></tr></thead><tbody id="dataTable"></tbody></table></div>
+  </section>
+</main>
+<footer>Prototipo académico desarrollado con HTML5, CSS3 y JavaScript nativo. No requiere instalación de librerías ni conexión a internet para funcionar.</footer>
+
+<script>
+"use strict";
+const initialData = [
+ {date:"2026-01-15",country:"Estados Unidos",product:"Café",exports:85000,imports:32000},
+ {date:"2026-01-20",country:"México",product:"Textiles",exports:62000,imports:45000},
+ {date:"2026-02-10",country:"España",product:"Cacao",exports:74000,imports:28000},
+ {date:"2026-02-18",country:"China",product:"Tecnología",exports:45000,imports:92000},
+ {date:"2026-03-12",country:"Estados Unidos",product:"Flores",exports:95000,imports:25000},
+ {date:"2026-03-22",country:"México",product:"Café",exports:68000,imports:38000},
+ {date:"2026-04-08",country:"España",product:"Textiles",exports:55000,imports:42000},
+ {date:"2026-04-19",country:"China",product:"Cacao",exports:82000,imports:65000},
+ {date:"2026-05-11",country:"Estados Unidos",product:"Cacao",exports:105000,imports:30000},
+ {date:"2026-05-23",country:"México",product:"Flores",exports:78000,imports:35000},
+ {date:"2026-06-14",country:"España",product:"Café",exports:88000,imports:27000},
+ {date:"2026-06-25",country:"China",product:"Tecnología",exports:52000,imports:98000}
+];
+let records = initialData.map(x=>({...x}));
+const $ = id => document.getElementById(id);
+const money = n => new Intl.NumberFormat("es-CO",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(n);
+const sum = (arr,key)=>arr.reduce((a,x)=>a+Number(x[key]||0),0);
+function filtered(){
+ const country=$("countryFilter").value, year=$("yearFilter").value;
+ return records.filter(r=>(!country||r.country===country)&&(!year||r.date.slice(0,4)===year));
+}
+function setOptions(){
+ const cf=$("countryFilter"), yf=$("yearFilter"), oldC=cf.value,oldY=yf.value;
+ cf.innerHTML='<option value="">Todos los países</option>';
+ [...new Set(records.map(r=>r.country))].sort().forEach(c=>cf.add(new Option(c,c)));
+ yf.innerHTML='<option value="">Todos los años</option>';
+ [...new Set(records.map(r=>r.date.slice(0,4)))].sort().forEach(y=>yf.add(new Option(y,y)));
+ cf.value=[...cf.options].some(o=>o.value===oldC)?oldC:"";
+ yf.value=[...yf.options].some(o=>o.value===oldY)?oldY:"";
+}
+function canvasSetup(id){
+ const c=$(id), rect=c.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+ c.width=Math.max(300,rect.width)*dpr;c.height=Math.max(180,rect.height)*dpr;
+ const ctx=c.getContext("2d");ctx.scale(dpr,dpr);
+ return {ctx,w:c.width/dpr,h:c.height/dpr};
+}
+function text(ctx,t,x,y,size=11,color="#6b7c8c",align="left"){
+ ctx.fillStyle=color;ctx.font=`${size}px Segoe UI,Arial`;ctx.textAlign=align;ctx.fillText(t,x,y);
+}
+function monthlyChart(data){
+ const {ctx,w,h}=canvasSetup("monthlyChart"),months=[...new Set(data.map(r=>r.date.slice(0,7)))].sort();
+ const vals=months.map(m=>({m,e:sum(data.filter(r=>r.date.startsWith(m)),"exports"),i:sum(data.filter(r=>r.date.startsWith(m)),"imports")}));
+ const max=Math.max(1,...vals.flatMap(v=>[v.e,v.i]))*1.15,pad={l:42,r:12,t:14,b:34},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+ for(let k=0;k<=4;k++){let y=pad.t+ch*k/4;ctx.strokeStyle="#e8eef2";ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();text(ctx,Math.round(max*(1-k/4)/1000)+"k",pad.l-7,y+4,10,"#7a8995","right")}
+ const group=cw/Math.max(1,vals.length),bw=Math.min(18,group*.28);
+ vals.forEach((v,j)=>{let x=pad.l+j*group+group/2;let he=v.e/max*ch,hi=v.i/max*ch;ctx.fillStyle="#176b87";ctx.fillRect(x-bw-2,pad.t+ch-he,bw,he);ctx.fillStyle="#27a6b8";ctx.fillRect(x+2,pad.t+ch-hi,bw,hi);text(ctx,v.m.slice(5),x,pad.t+ch+20,10,"#6b7c8c","center")});
+ legend(ctx,w-160,12,[["Exportaciones","#176b87"],["Importaciones","#27a6b8"]]);
+}
+function countryChart(data){
+ const {ctx,w,h}=canvasSetup("countryChart"),countries=[...new Set(data.map(r=>r.country))].map(c=>({c,e:sum(data.filter(r=>r.country===c),"exports"),i:sum(data.filter(r=>r.country===c),"imports")})).sort((a,b)=>(b.e+b.i)-(a.e+a.i)).slice(0,7);
+ const max=Math.max(1,...countries.map(x=>x.e+x.i))*1.12,pad={l:105,r:12,t:10,b:15},cw=w-pad.l-pad.r,row=(h-pad.t-pad.b)/Math.max(1,countries.length);
+ countries.forEach((v,j)=>{let y=pad.t+j*row+row*.2,bh=Math.min(22,row*.55),e=v.e/max*cw,i=v.i/max*cw;text(ctx,v.c.length>16?v.c.slice(0,15)+"…":v.c,pad.l-8,y+bh*.8,10,"#536574","right");ctx.fillStyle="#176b87";ctx.fillRect(pad.l,y,e,bh);ctx.fillStyle="#27a6b8";ctx.fillRect(pad.l+e,y,i,bh)});
+ legend(ctx,w-160,8,[["Exportaciones","#176b87"],["Importaciones","#27a6b8"]]);
+}
+function productChart(data){
+ const {ctx,w,h}=canvasSetup("productChart"),items=[...new Set(data.map(r=>r.product))].map(p=>({p,v:sum(data.filter(r=>r.product===p),"exports")})).sort((a,b)=>b.v-a.v);
+ const total=sum(items,"v")||1,colors=["#176b87","#27a6b8","#18866b","#e0a64b","#7887a1","#9b78b5"];
+ let start=-Math.PI/2,cx=w*.34,cy=h*.51,r=Math.min(h*.38,w*.22);
+ items.forEach((it,i)=>{let end=start+it.v/total*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,end);ctx.closePath();ctx.fillStyle=colors[i%colors.length];ctx.fill();start=end});
+ let y=26;items.forEach((it,i)=>{ctx.fillStyle=colors[i%colors.length];ctx.fillRect(w*.62,y-9,10,10);text(ctx,it.p,w*.62+16,y,11,"#536574");text(ctx,(it.v/total*100).toFixed(1)+"%",w-8,y,10,"#203244","right");y+=Math.min(34,(h-20)/Math.max(1,items.length))});
+}
+function linearForecast(data){
+ const monthly=[...new Set(data.map(r=>r.date.slice(0,7)))].sort().map(m=>({m,v:sum(data.filter(r=>r.date.startsWith(m)),"exports")}));
+ if(monthly.length<2)return {monthly,forecast:[],slope:0};
+ const n=monthly.length,xbar=(n-1)/2,ybar=sum(monthly,"v")/n;
+ let num=0,den=0;monthly.forEach((p,i)=>{num+=(i-xbar)*(p.v-ybar);den+=(i-xbar)**2});
+ const slope=den?num/den:0,intercept=ybar-slope*xbar;
+ return {monthly,forecast:[1,2,3].map(k=>Math.max(0,intercept+slope*(n-1+k))),slope};
+}
+function forecastChart(data){
+ const {ctx,w,h}=canvasSetup("forecastChart"),f=linearForecast(data),all=[...f.monthly.map(x=>x.v),...f.forecast],max=Math.max(1,...all)*1.15,pad={l:42,r:12,t:14,b:32},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+ for(let k=0;k<=4;k++){let y=pad.t+ch*k/4;ctx.strokeStyle="#e8eef2";ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();text(ctx,Math.round(max*(1-k/4)/1000)+"k",pad.l-7,y+4,10,"#7a8995","right")}
+ const labels=[...f.monthly.map(x=>x.m),...f.forecast.map((_,i)=>"Proy. "+(i+1))],vals=all,step=cw/Math.max(1,vals.length-1);
+ ctx.beginPath();vals.forEach((v,i)=>{let x=pad.l+i*step,y=pad.t+ch-v/max*ch;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.strokeStyle="#176b87";ctx.lineWidth=2.5;ctx.stroke();
+ vals.forEach((v,i)=>{let x=pad.l+i*step,y=pad.t+ch-v/max*ch;ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fillStyle=i<f.monthly.length?"#176b87":"#e0a64b";ctx.fill();text(ctx,labels[i].slice(5),x,pad.t+ch+19,9,"#6b7c8c","center")});
+ return f;
+}
+function legend(ctx,x,y,items){items.forEach((a,i)=>{ctx.fillStyle=a[1];ctx.fillRect(x+i*88,y,9,9);text(ctx,a[0],x+13+i*88,y+9,9,"#6b7c8c")})}
+function render(){
+ const data=filtered(),e=sum(data,"exports"),im=sum(data,"imports"),bal=e-im;
+ $("exportsKpi").textContent=money(e);$("importsKpi").textContent=money(im);
+ $("balanceKpi").textContent=money(bal);$("balanceKpi").className="kpi-value "+(bal>=0?"positive":"negative");
+ $("balanceText").textContent=bal>=0?"Superávit comercial":"Déficit comercial";
+ $("countriesKpi").textContent=new Set(data.map(r=>r.country)).size;
+ $("operationsText").textContent=data.length+" operaciones registradas";
+ monthlyChart(data);countryChart(data);productChart(data);
+ const f=forecastChart(data);
+ $("forecastText").textContent=f.forecast.length?`Estimación lineal: ${f.forecast.map((v,i)=>"mes "+(i+1)+": "+money(v)).join(" · ")}. Es una extrapolación matemática, no una predicción garantizada.`:"Se necesitan al menos dos meses distintos para calcular una tendencia.";
+ $("dataTable").innerHTML=data.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(r=>`<tr><td>${escapeHtml(r.date)}</td><td>${escapeHtml(r.country)}</td><td>${escapeHtml(r.product)}</td><td class="num">${money(r.exports)}</td><td class="num">${money(r.imports)}</td><td class="num">${money(r.exports-r.imports)}</td></tr>`).join("")||'<tr><td colspan="6">No hay operaciones para los filtros seleccionados.</td></tr>';
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+$("entryForm").addEventListener("submit",e=>{
+ e.preventDefault();const row={date:$("date").value,country:$("country").value.trim(),product:$("product").value.trim(),exports:Number($("exports").value),imports:Number($("imports").value)};
+ if(!row.date||!row.country||!row.product||row.exports<0||row.imports<0||!Number.isFinite(row.exports)||!Number.isFinite(row.imports)){alert("Revisa los campos. Los montos deben ser números iguales o mayores que cero.");return}
+ records.push(row);setOptions();render();$("entryForm").reset();$("date").value=new Date().toISOString().slice(0,10);
+});
+$("countryFilter").addEventListener("change",render);$("yearFilter").addEventListener("change",render);
+$("clearFilters").addEventListener("click",()=>{$("countryFilter").value="";$("yearFilter").value="";render()});
+$("resetBtn").addEventListener("click",()=>{records=initialData.map(x=>({...x}));setOptions();render()});
+$("csvBtn").addEventListener("click",()=>{
+ const rows=[["Fecha","País","Producto","Exportaciones_USD","Importaciones_USD"],...records.map(r=>[r.date,r.country,r.product,r.exports,r.imports])];
+ const csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
+ download(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}),"operaciones_comercio.csv");
+});
+function download(blob,name){const a=document.createElement("a"),url=URL.createObjectURL(blob);a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
+$("csvFile").addEventListener("change",async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{
+  const lines=(await file.text()).replace(/^\uFEFF/,"").trim().split(/\r?\n/);
+  const parsed=lines.slice(1).map(line=>{const cols=line.match(/("([^"]|"")*"|[^,]*)(,|$)/g)||[];const vals=cols.map(x=>x.replace(/,$/,"").replace(/^"|"$/g,"").replace(/""/g,'"'));return {date:vals[0],country:vals[1],product:vals[2],exports:Number(vals[3]),imports:Number(vals[4])}});
+  const clean=parsed.filter(r=>r.date&&r.country&&r.product&&Number.isFinite(r.exports)&&Number.isFinite(r.imports)&&r.exports>=0&&r.imports>=0);
+  if(!clean.length)throw new Error("No se encontraron filas válidas.");
+  records=clean;setOptions();render();alert("Se importaron "+clean.length+" operaciones.");
+ }catch(err){alert("No se pudo importar el archivo: "+err.message)}
+ e.target.value="";
+});
+let resizeTimer;window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(render,120)});
+setOptions();render();
+</script>
+</body>
+</html>
